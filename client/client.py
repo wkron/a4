@@ -53,7 +53,7 @@ class Server(object):
                 response_length = struct.unpack('!I', inital_read)[0]
 
                 # Now read the expected number of bytes
-                response_bytes = conn_socket.recv(
+                response_bytes = conn_socket.recv( 
                     response_length+LEN_STATUS+LEN_BLOCK_ID+LEN_BLOCKS_COUNT
                     +LEN_BLOCK_HASH+LEN_TOTAL_HASH)
 

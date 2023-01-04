@@ -75,8 +75,7 @@ class RequestHandler(socketserver.StreamRequestHandler):
             self.handle_error(STATUS_OTHER, f"Something went wrong. {e}")
 
     def _handle_request(self, request:bytes) -> None:
-        """
-        Function to handle a 'get file' type request.
+        """Function to handle a 'get file' type request.
         request(bytes): The request message body
 
         A data file is read and sent back to the requestee. A response is 
