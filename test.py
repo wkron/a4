@@ -33,9 +33,12 @@ while True:
     if method == 'GET':
         # Get the requested file path
         file_path = path[1:]
-        
+        if not file_path and os.path.exists("index2.html"):
+            file_path= "index.html"
+        print("this is file_path:",file_path)
         # Check if the file exists
         if os.path.exists(file_path):
+            print("correct")
             # Open the file in binary mode
             with open(file_path, 'rb') as f:
                 # Get the file's mimetype
@@ -53,6 +56,27 @@ while True:
                 connection.send(response_headers.encode())
                 # Send the file contents to the client
                 connection.sendfile(f)
+        elif not file_path:
+            # Generate a list of the files and directories in the directory
+                file_list = os.listdir(".")
+                # Set the response status to 200 (OK)
+                response_status = 'HTTP/1.1 200 OK\n'
+                # Set the content type header
+                response_headers = 'Content-Type: text/html\n'
+                # Start building the HTML for the file list
+                file_list_html = '<html><body><ul>'
+                for file in file_list:
+                    file_list_html += f'<li><a href="{file}">{file}</a></li>'
+                file_list_html += '</ul></body></html>'
+                # Set the content length header
+                response_headers += f'Content-Length: {len(file_list_html.encode())}\n'
+                # End the headers
+                response_headers += '\n'
+                # Send the response
+                connection.send(response_status.encode())
+                connection.send(response_headers.encode())
+                # Send the file contents to the client
+                connection.send(file_list_html.encode())
         else:
             # Set the response status to 404 (Not Found)
             response_status = 'HTTP/1.1 404 Not Found\n'
