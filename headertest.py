@@ -45,10 +45,8 @@ while True:
         file_path = path[1:]
         if not file_path and os.path.exists("index2.html"):
             file_path= "index.html"
-        print("this is file_path:",file_path)
         # Check if the file exists
         if os.path.exists(file_path) and not os.path.isdir(file_path):
-            print("file exists, being served")
             # Open the file in binary mode
             with open(file_path, 'rb') as f:
                 # Get the file's mimetype
