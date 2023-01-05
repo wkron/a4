@@ -4,7 +4,7 @@ import mimetypes
 
 # Constants
 HOST = ''
-PORT = 8000
+PORT = 8001
 BUFFER_SIZE = 1024
 
 # Create the server socket
@@ -38,7 +38,7 @@ while True:
         print("this is file_path:",file_path)
         # Check if the file exists
         if os.path.exists(file_path) and not os.path.isdir(file_path):
-            print("correct")
+            print("file exists, being served")
             # Open the file in binary mode
             with open(file_path, 'rb') as f:
                 # Get the file's mimetype
@@ -62,7 +62,6 @@ while True:
                 file_path += "."
             file_list = os.listdir(file_path)
                 # Set the response status to 200 (OK)
-            print(file_list)
             response_status = 'HTTP/1.1 200 OK\n'
             # Set the content type header
             response_headers = 'Content-Type: text/html\n'
@@ -73,7 +72,6 @@ while True:
             file_list_html += '</ul></body></html>'
             # Set the content length header
             response_headers += f'Content-Length: {len(file_list_html.encode())}\n'
-            print(file_list_html)
             # End the headers
             response_headers += '\n'
             # Send the response
