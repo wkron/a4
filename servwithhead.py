@@ -4,7 +4,7 @@ import mimetypes
 
 # Constants
 HOST = ''
-PORT = 8001
+PORT = 8000
 BUFFER_SIZE = 1024
 
 # Create the server socket
@@ -22,7 +22,7 @@ while True:
     
     # Receive the request data
     request_data = connection.recv(BUFFER_SIZE).decode()
-    print(f'Received request:\n{request_data}')
+    # print(f'Received request:\n{request_data}')
     
     # Parse the request
     request_lines = request_data.split('\n')
@@ -38,7 +38,9 @@ while True:
         header_name = header_name.strip().lower()
         header_value = header_value.strip()
         headers[header_name] = header_value
+
     print(headers)
+
     # Check if the method is GET
     if method == 'GET':
         # Get the requested file path
@@ -51,6 +53,22 @@ while True:
             print("file exists, being served")
             # Open the file in binary mode
             with open(file_path, 'rb') as f:
+                if "if-modified-since" in headers:
+                    print("IF MODIFIED SINCE!")
+                    if os.stat(f).st_mtime > headers["if-modified-since"]:
+                        response_status = 'HTTP/1.1 304 Not Modified\n'
+                        response_headers = '\n'
+                        connection.send(response_status.encode())
+                        connection.send(response_headers.encode())
+                        continue
+                if "if-unmodified-since" in headers:
+                    print("IF UNMODIFIED SINCE!")
+                    if os.stat(f).st_mtime < headers["if-unmodified-since"]:
+                        response_status = 'HTTP/1.1 412 Precondition Failed\n'
+                        response_headers = '\n'
+                        connection.send(response_status.encode())
+                        connection.send(response_headers.encode())
+                        continue
                 # Get the file's mimetype
                 mimetype, _ = mimetypes.guess_type(file_path)
                 # Set the response status to 200 (OK)
@@ -59,26 +77,8 @@ while True:
                 response_headers = f'Content-Type: {mimetype}\n'
                 # Set the content length header
                 response_headers += f'Content-Length: {os.path.getsize(file_path)}\n'
-                # Set the "Host" header
-                response_headers += f'Host: {headers["host"]}\n'
-                # Set the "Accept" header
-                if "accept" in headers:
-                    response_headers += f'Accept: {headers["accept"]}\n'
-                    # Set the "Accept-Encoding" header
-                if "accept-encoding" in headers:
-                    response_headers += f'Accept-Encoding: {headers["accept-encoding"]}\n'
-                # Set the "If-Modified-Since" header
-                if "if-modified-since" in headers:
-                  response_headers += f'If-Modified-Since: {headers["if-modified-since"]}\n'
-                # Set the "If-Unmodified-Since" header
-                if "if-unmodified-since" in headers:
-                 response_headers += f'If-Unmodified-Since: {headers["if-unmodified-since"]}\n'
-                # Set the "User-Agent" header
-                if "user-agent" in headers:
-                 response_headers += f'User-Agent: {headers["user-agent"]}\n'
                 # End the headers
                 response_headers += '\n'
-
                 # Send the response
                 connection.send(response_status.encode())
                 connection.send(response_headers.encode())
@@ -100,23 +100,6 @@ while True:
             file_list_html += '</ul></body></html>'
             # Set the content length header
             response_headers += f'Content-Length: {len(file_list_html.encode())}\n'
-            # Set the "Host" header
-            response_headers += f'Host: {headers["host"]}\n'
-            # Set the "Accept" header
-            if "accept" in headers:
-                response_headers += f'Accept: {headers["accept"]}\n'
-            # Set the "Accept-Encoding" header
-            if "accept-encoding" in headers:
-                response_headers += f'Accept-Encoding: {headers["accept-encoding"]}\n'
-            # Set the "If-Modified-Since" header
-            if "if-modified-since" in headers:
-                response_headers += f'If-Modified-Since: {headers["if-modified-since"]}\n'
-            # Set the "If-Unmodified-Since" header
-            if "if-unmodified-since" in headers:
-                response_headers += f'If-Unmodified-Since: {headers["if-unmodified-since"]}\n'
-            # Set the "User-Agent" header
-            if "user-agent" in headers:
-                response_headers += f'User-Agent: {headers["user-agent"]}\n'
             # End the headers
             response_headers += '\n'
             # Send the response
@@ -133,10 +116,8 @@ while True:
             # Send the response
             connection.send(response_status.encode())
             connection.send(response_headers.encode())
-            if os.path.isdir(file_path):
-                file_path = file_path[:-1]
-            file_path_html = f'<html><body><p>File "{file_path}" not found</p></body></html>'
-            connection.send(file_path_html.encode())
+            if os.path.exists("404.html"):
+                connection.sendfile(open("404.html", "rb"))
     
     # Close the connection
     connection.close()
