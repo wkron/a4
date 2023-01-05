@@ -37,7 +37,7 @@ while True:
             file_path= "index.html"
         print("this is file_path:",file_path)
         # Check if the file exists
-        if os.path.exists(file_path):
+        if os.path.exists(file_path) and not os.path.isdir(file_path):
             print("correct")
             # Open the file in binary mode
             with open(file_path, 'rb') as f:
@@ -56,28 +56,33 @@ while True:
                 connection.send(response_headers.encode())
                 # Send the file contents to the client
                 connection.sendfile(f)
-        elif not file_path:
+        elif not file_path or os.path.isdir(file_path):
             # Generate a list of the files and directories in the directory
-                file_list = os.listdir(".")
+            if not os.path.isdir(file_path):
+                file_path += "."
+            file_list = os.listdir(file_path)
                 # Set the response status to 200 (OK)
-                response_status = 'HTTP/1.1 200 OK\n'
-                # Set the content type header
-                response_headers = 'Content-Type: text/html\n'
-                # Start building the HTML for the file list
-                file_list_html = '<html><body><ul>'
-                for file in file_list:
-                    file_list_html += f'<li><a href="{file}">{file}</a></li>'
-                file_list_html += '</ul></body></html>'
-                # Set the content length header
-                response_headers += f'Content-Length: {len(file_list_html.encode())}\n'
-                # End the headers
-                response_headers += '\n'
-                # Send the response
-                connection.send(response_status.encode())
-                connection.send(response_headers.encode())
-                # Send the file contents to the client
-                connection.send(file_list_html.encode())
+            print(file_list)
+            response_status = 'HTTP/1.1 200 OK\n'
+            # Set the content type header
+            response_headers = 'Content-Type: text/html\n'
+            # Start building the HTML for the file list
+            file_list_html = '<html><body><ul>'
+            for file in file_list:
+                file_list_html += f'<li><a href="{ "/" + file_path + "/" + file}">{file}</a></li>'
+            file_list_html += '</ul></body></html>'
+            # Set the content length header
+            response_headers += f'Content-Length: {len(file_list_html.encode())}\n'
+            print(file_list_html)
+            # End the headers
+            response_headers += '\n'
+            # Send the response
+            connection.send(response_status.encode())
+            connection.send(response_headers.encode())
+            # Send the file contents to the client
+            connection.send(file_list_html.encode())
         else:
+            print("file not found, 404 returned")
             # Set the response status to 404 (Not Found)
             response_status = 'HTTP/1.1 404 Not Found\n'
             # End the headers
@@ -85,6 +90,8 @@ while True:
             # Send the response
             connection.send(response_status.encode())
             connection.send(response_headers.encode())
+            if os.path.exists("404.html"):
+                connection.sendfile(open("404.html", "rb"))
     
     # Close the connection
     connection.close()
