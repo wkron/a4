@@ -33,7 +33,7 @@ while True:
     if method == 'GET':
         # Get the requested file path
         file_path = path[1:]
-        if not file_path and os.path.exists("index2.html"):
+        if not file_path and os.path.exists("index.html"):
             file_path= "index.html"
         print("this is file_path:",file_path)
         # Check if the file exists
