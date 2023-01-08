@@ -56,7 +56,6 @@ while True:
             # Open the file in binary mode
             with open(file_path, 'rb') as f:
                 if "if-modified-since" in headers:
-                    print("IF MODIFIED SINCE!")
                     if time.gmtime(os.stat(f).st_mtime) < parsedate(headers["if-modified-since"]):
                         response_status = 'HTTP/1.1 304 Not Modified\n'
                         response_headers = '\n'
@@ -64,7 +63,6 @@ while True:
                         connection.send(response_headers.encode())
                         continue
                 if "if-unmodified-since" in headers:
-                    print("IF UNMODIFIED SINCE!")
                     if time.gmtime(os.stat(f).st_mtime) > parsedate(headers["if-unmodified-since"]):
                         response_status = 'HTTP/1.1 412 Precondition Failed\n'
                         response_headers = '\n'
