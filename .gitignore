@@ -1,0 +1,4 @@
+# gitignore everything with no extension
+.vscode
+.DS_Store
+.git
