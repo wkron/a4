@@ -2,6 +2,8 @@ import socket
 import os
 import mimetypes
 from email.utils import parsedate
+import time
+
 # Constants
 HOST = ''
 PORT = 8000
@@ -63,7 +65,7 @@ while True:
                         continue
                 if "if-unmodified-since" in headers:
                     print("IF UNMODIFIED SINCE!")
-                    if time.gmtime(os.stat(f).st_mtime) > parsetime(headers["if-unmodified-since"]):
+                    if time.gmtime(os.stat(f).st_mtime) > parsedate(headers["if-unmodified-since"]):
                         response_status = 'HTTP/1.1 412 Precondition Failed\n'
                         response_headers = '\n'
                         connection.send(response_status.encode())
